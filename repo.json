@@ -1,0 +1,8 @@
+{
+    "name": "TR Repo",
+    "description": "Türkiye kaynaklı anime, dizi ve canlı TV eklentileri",
+    "manifestVersion": 1,
+    "pluginLists": [
+      "https://raw.githubusercontent.com/KULLANICIADI/cloudstream-tr-repo/builds/plugins.json"
+    ]
+}
