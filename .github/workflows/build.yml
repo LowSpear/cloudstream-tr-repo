@@ -1,6 +1,5 @@
 name: Build
 
-# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#concurrency
 concurrency: 
   group: "build"
   cancel-in-progress: true
@@ -8,37 +7,54 @@ concurrency:
 on:
   push:
     branches:
-      # choose your default branch
-      - master
       - main
+      - master
     paths-ignore:
       - '*.md'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           path: "src"
 
       - name: Checkout builds
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           ref: "builds"
           path: "builds"
-      
+        continue-on-error: true
+       
+      - name: Create builds branch if missing
+        if: steps.checkout-builds.outcome == 'failure'
+        run: |
+          cd $GITHUB_WORKSPACE
+          git checkout --orphan builds
+          git rm -rf .
+          echo "placeholder" > .keep
+          git add .keep
+          git commit -m "init builds"
+          git push origin builds
+          git checkout main
+
       - name: Clean old builds
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/builds
+          rm -f $GITHUB_WORKSPACE/builds/*.cs3
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: 'temurin'
           java-version: 17
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
 
       - name: Build Plugins
         run: |
@@ -54,6 +70,5 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit --amend -m "Build $GITHUB_SHA" || exit 0   # do not error if nothing to commit
+          git commit -m "Build $GITHUB_SHA" || exit 0
           git push --force
-# trigger
