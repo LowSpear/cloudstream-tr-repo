@@ -10,7 +10,7 @@ class AnimeSource : MainAPI() {
     override val supportedTypes = setOf(TvType.Anime)
     override var lang = "tr"
     override val hasMainPage = true
-    override val hasSearch = true
+    val hasSearch = true
 
     override val mainPage = mainPageOf(
         "$mainUrl" to "Ana Sayfa",
